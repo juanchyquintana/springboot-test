@@ -25,7 +25,7 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Override
     public List<Cuenta> findAll() {
-        return List.of();
+        return cuentaRepository.findAll();
     }
 
     @Override
@@ -36,7 +36,7 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Override
     public Cuenta save(Cuenta cuenta) {
-        return null;
+        return cuentaRepository.save(cuenta);
     }
 
     @Override

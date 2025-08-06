@@ -1,6 +1,6 @@
 package com.jquintana.test.springboot.app;
 
-import com.jquintana.test.springboot.app.data.Datos;
+import static com.jquintana.test.springboot.app.data.Datos.*;
 import com.jquintana.test.springboot.app.exceptions.DineroInsuficienteException;
 import com.jquintana.test.springboot.app.models.Banco;
 import com.jquintana.test.springboot.app.models.Cuenta;
@@ -15,6 +15,9 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -43,9 +46,9 @@ class SpringbootTestApplicationTests {
 
     @Test
     void contextLoads() {
-        when(cuentaRepository.findById(1L)).thenReturn(Datos.crearCuenta001());
-        when(cuentaRepository.findById(2L)).thenReturn(Datos.crearCuenta002());
-        when(bancoRepository.findById(1L)).thenReturn(Datos.crearBanco());
+        when(cuentaRepository.findById(1L)).thenReturn(crearCuenta001());
+        when(cuentaRepository.findById(2L)).thenReturn(crearCuenta002());
+        when(bancoRepository.findById(1L)).thenReturn(crearBanco());
 
 		BigDecimal saldoOrigen = service.revisarSaldo(1L);
 		BigDecimal saldoDestino = service.revisarSaldo(2L);
@@ -78,9 +81,9 @@ class SpringbootTestApplicationTests {
 
     @Test
     void contextLoads2() {
-        when(cuentaRepository.findById(1L)).thenReturn(Datos.crearCuenta001());
-        when(cuentaRepository.findById(2L)).thenReturn(Datos.crearCuenta002());
-        when(bancoRepository.findById(1L)).thenReturn(Datos.crearBanco());
+        when(cuentaRepository.findById(1L)).thenReturn(crearCuenta001());
+        when(cuentaRepository.findById(2L)).thenReturn(crearCuenta002());
+        when(bancoRepository.findById(1L)).thenReturn(crearBanco());
 
         BigDecimal saldoOrigen = service.revisarSaldo(1L);
         BigDecimal saldoDestino = service.revisarSaldo(2L);
@@ -114,7 +117,7 @@ class SpringbootTestApplicationTests {
 
     @Test
     void contextLoads3() {
-        when(cuentaRepository.findById(1L)).thenReturn(Datos.crearCuenta001());
+        when(cuentaRepository.findById(1L)).thenReturn(crearCuenta001());
 
         Cuenta cuenta1 = service.findById(1L);
         Cuenta cuenta2 = service.findById(1L);
@@ -127,5 +130,41 @@ class SpringbootTestApplicationTests {
         assertEquals("Juan", cuenta2.getPersona());
 
         verify(cuentaRepository, times(2)).findById(1L);
+    }
+
+    @Test
+    void testFindAll() {
+        List<Cuenta> datos = Arrays.asList(
+                crearCuenta001().orElseThrow(),
+                crearCuenta002().orElseThrow()
+        );
+        when(cuentaRepository.findAll()).thenReturn(datos);
+
+        List<Cuenta> cuentas = service.findAll();
+
+        assertFalse(cuentas.isEmpty());
+        assertEquals(2, cuentas.size());
+        assertTrue(cuentas.contains(crearCuenta001().orElseThrow()));
+
+        verify(cuentaRepository).findAll();
+    }
+
+    @Test
+    void testSave() {
+        Cuenta cuenta = new Cuenta(null, "Pepe", new BigDecimal("3000"));
+        when(cuentaRepository.save(any())).then(invocation -> {
+            Cuenta c = invocation.getArgument(0);
+            c.setId(3L);
+
+            return c;
+        });
+
+        Cuenta pepe = service.save(cuenta);
+
+        assertEquals("Pepe", pepe.getPersona());
+        assertEquals(3, pepe.getId());
+        assertEquals("3000", pepe.getSaldo().toPlainString());
+
+        verify(cuentaRepository).save(any());
     }
 }
